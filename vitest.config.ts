@@ -16,6 +16,7 @@ export default defineConfig({
       escapeString: false,
       printBasicPrototype: false,
     },
+    globalSetup: 'vitest.setup.ts',
     watch: false,
   },
 });

@@ -227,12 +227,12 @@ describe('格式化', () => {
           {
             type: 'date-time',
             dateStyle: 'full',
-            timeStyle: 'full',
+            timeStyle: 'medium',
           },
         ],
         'zh',
       ),
-    ).toBe('2024年9月24日星期二 中国标准时间 22:57:52');
+    ).toBe('2024年9月24日星期二 22:57:52');
 
     expect(
       i18n['formatTokenValue'](
