@@ -1,0 +1,37 @@
+{
+  "name": "@i18nx/core",
+  "version": "0.0.0",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "scripts": {
+    "prepublishOnly": "tsup"
+  },
+  "types": "src/index.ts",
+  "exports": "./src/index.ts",
+  "files": [
+    "dist",
+    "LICENSE",
+    "package.json",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "publishConfig": {
+    "types": "dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/esm/index.js",
+        "require": "./dist/index.js"
+      },
+      "./package.json": "./package.json"
+    },
+    "access": "public"
+  },
+  "engines": {
+    "node": "^18 || ^20 || ^22"
+  },
+  "dependencies": {
+    "topic": "^3.0.2"
+  }
+}
