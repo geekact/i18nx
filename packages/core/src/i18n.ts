@@ -41,7 +41,7 @@ export interface I18nOptions<
   languageAlias?: Record<string, Languages>;
 }
 
-export class I18n<
+export class CoreI18n<
   Locales extends Record<string, object | (() => Promise<object>)>,
   Languages extends string & keyof Locales,
   DefaultLanguage extends Languages,

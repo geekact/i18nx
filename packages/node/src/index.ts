@@ -1,4 +1,4 @@
-import { I18n as CoreI18n } from '@i18nx/core';
+import { CoreI18n } from '@i18nx/core';
 import { AsyncLocalStorage } from 'node:async_hooks';
 
 const storage = new AsyncLocalStorage<string>();
@@ -30,3 +30,5 @@ export class I18n<
     return parentLanguage || this._currentLanguage;
   }
 }
+
+export * from '@i18nx/core';

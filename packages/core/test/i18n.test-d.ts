@@ -1,36 +1,36 @@
 import { expectType, type TypeEqual } from 'ts-expect';
-import { I18n } from '../src';
+import { CoreI18n } from '../src';
 import en from './fixture/locales/en';
 import zh from './fixture/locales/zh';
 
-const i18n = new I18n({
+const i18n = new CoreI18n({
   defaultLanguage: 'zh-CN',
   locales: { 'zh-CN': zh, 'en-US': en },
 });
 
 // 构造函数
 {
-  new I18n({ locales: { zh: {}, en: {} }, defaultLanguage: 'en' });
+  new CoreI18n({ locales: { zh: {}, en: {} }, defaultLanguage: 'en' });
 
   // @ts-expect-error
-  new I18n({ defaultLanguage: 'en' });
+  new CoreI18n({ defaultLanguage: 'en' });
 
-  new I18n({
+  new CoreI18n({
     locales: { zh: {}, en: {} },
     // @ts-expect-error
     defaultLanguage: 'zh1',
   });
 
   // @ts-expect-error
-  new I18n({ locales: { zh: {}, en: {} } });
+  new CoreI18n({ locales: { zh: {}, en: {} } });
 
   // @ts-expect-error
-  new I18n({});
+  new CoreI18n({});
 
   // @ts-expect-error
-  new I18n();
+  new CoreI18n();
 
-  new I18n({
+  new CoreI18n({
     locales: { zh: {}, en: {} },
     defaultLanguage: 'zh',
     languageAlias: {
@@ -140,7 +140,7 @@ const i18n = new I18n({
 
 // 动态资源
 {
-  const i18n = new I18n({
+  const i18n = new CoreI18n({
     locales: {
       'zh-CN': zh,
       'en-US': async () => {
