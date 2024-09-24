@@ -8,12 +8,15 @@
     "test": "vitest",
     "preinstall": "npx only-allow pnpm",
     "build": "pnpm -r prepublishOnly",
-    "prepare": "npx husky"
+    "prepare": "npx husky",
+    "deploy:main": "sh scripts/develop-deploy-main.sh",
+    "sync:main": "sh scripts/develop-sync-main.sh"
   },
   "volta": {
     "node": "20.17.0",
     "pnpm": "9.11.0"
   },
+  "packageManager": "pnpm@9.11.0",
   "dependencies": {
     "@commitlint/cli": "^19.5.0",
     "@commitlint/config-conventional": "^19.5.0",
