@@ -32,4 +32,4 @@ export class I18n<
   }
 }
 
-export { I18nMessage } from '@i18nx/core';
+export * from '@i18nx/core';

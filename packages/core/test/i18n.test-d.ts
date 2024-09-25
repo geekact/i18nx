@@ -1,7 +1,8 @@
 import { expectType, type TypeEqual } from 'ts-expect';
 import { CoreI18n } from '../src';
-import en from './fixture/locales/en';
-import zh from './fixture/locales/zh';
+import { en } from './fixture/locales/en';
+import { zh } from './fixture/locales/zh';
+import { jp } from './fixture/locales/jp';
 
 const i18n = new CoreI18n({
   defaultLanguage: 'zh-CN',
@@ -144,7 +145,7 @@ const i18n = new CoreI18n({
     locales: {
       'zh-CN': zh,
       'en-US': async () => {
-        return (await import('./fixture/locales/en')).default;
+        return (await import('./fixture/locales/en')).en;
       },
     },
     defaultLanguage: 'zh-CN',
@@ -160,4 +161,60 @@ const i18n = new CoreI18n({
       }
     >
   >(true);
+}
+
+// 定义
+{
+  const zh = CoreI18n.define({
+    hello: '你好',
+    a: {
+      b: CoreI18n.message('好的'),
+    },
+  });
+
+  const en = CoreI18n.satisfies(zh).define({
+    hello: 'Hello',
+  });
+  expectType<TypeEqual<{ readonly hello: 'Hello' }, typeof en>>(true);
+
+  CoreI18n.satisfies(zh).define({
+    // @ts-expect-error
+    hell: 'Hello',
+  });
+
+  CoreI18n.satisfies(zh).define({
+    hello: 'Hello',
+    a: {
+      // @ts-expect-error
+      c: 'cc',
+    },
+  });
+
+  // 满足的情况下多出来的字段不会报错（理想状态下是需要报错的）
+  CoreI18n.satisfies(zh).define({
+    hello: 'Hello',
+    a: {
+      b: 'bb',
+      c: 'cc',
+    },
+  });
+}
+
+// 缺失翻译
+{
+  const i18n = new CoreI18n({
+    locales: {
+      zh: zh,
+      en: async () => {
+        return (await import('./fixture/locales/en')).en;
+      },
+      jp: jp,
+    },
+    defaultLanguage: 'zh',
+  });
+
+  expectType<{
+    en: 'extra' | 'menus.default.admins';
+    jp: 'menus.default.users' | 'menus.default.admins';
+  }>(i18n.missingKeys);
 }

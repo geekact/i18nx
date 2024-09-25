@@ -1,44 +1,110 @@
 import { I18nMessage } from './i18n-message';
-import type {
-  SearchKey,
-  SearchParamNames,
-  KeyToMessage,
-  MessageFormatType,
-} from './type-d';
 import { Topic } from 'topic';
 
 const EVENT_LANGUAGE_CHANGED = 'language-changed';
 
-export interface I18nOptions<
-  Locales extends Record<string, object | (() => Promise<object>)>,
-  Languages extends string & keyof Locales,
-  DefaultLanguage,
-> {
-  /**
-   * 不同地区的翻译列表。建议每个地区都建一个独立的文件，然后引入
-   * ```typescript
-   * {
-   *   'zh-CN': <const>{ welcome: '你好 {{user}}', menus: { users: '用户列表' } },
-   *   'en-US': <const>{ welcome: 'Hello {{user}}', menus: { users: 'User List' } },
-   * }
-   * ```
-   */
-  locales: Locales;
-  /**
-   * 默认语言。注意：该语言的翻译列表必须立即引入，不能使用异步回调函数
-   */
-  defaultLanguage: DefaultLanguage;
-  /**
-   * 语言映射，把不规范的语言名称映射到翻译列表对应的语言
-   * ```typescript
-   * {
-   *   'zh'  : 'zh-CN',
-   *   'zh-*': 'zh-CN',
-   *   'en'  : 'en-US',
-   * }
-   * ```
-   */
-  languageAlias?: Record<string, Languages>;
+export namespace CoreI18n {
+  export type KeyToMessage<
+    Locale extends object,
+    K extends string,
+  > = K extends `${infer A}.${infer B}`
+    ? A extends keyof Locale
+      ? Locale[A] extends object
+        ? KeyToMessage<Locale[A], B>
+        : never
+      : never
+    : K extends keyof Locale
+      ? Locale[K] extends string
+        ? Locale[K]
+        : Locale[K] extends I18nMessage<infer R>
+          ? R
+          : never
+      : never;
+
+  export type SearchParamNames<Message extends string> =
+    Message extends `${string}{{${infer Parameter}}}${infer Suffix}`
+      ? Parameter | SearchParamNames<Suffix>
+      : never;
+
+  export type SearchKey<Locales extends object> = {
+    [K in keyof Locales]: K extends string
+      ? Locales[K] extends string
+        ? K
+        : Locales[K] extends I18nMessage<string>
+          ? K
+          : Locales[K] extends object
+            ? `${K}.${SearchKey<Locales[K]>}`
+            : never
+      : never;
+  }[keyof Locales];
+
+  export type Infer<Locale extends object> = {
+    [K in keyof Locale]?: Locale[K] extends string
+      ? string | I18nMessage<string>
+      : Locale[K] extends I18nMessage<string>
+        ? string | I18nMessage<string>
+        : Locale[K] extends object
+          ? Infer<Locale[K]>
+          : never;
+  };
+
+  export type Compare<
+    Current extends object,
+    Default extends object,
+    ParentKey extends string = '',
+  > = {
+    [K in keyof Default]: K extends string
+      ? K extends keyof Current
+        ? Default[K] extends string
+          ? never
+          : Default[K] extends I18nMessage<any>
+            ? never
+            : Default[K] extends object
+              ? Current[K] extends object
+                ? Compare<Current[K], Default[K], `${ParentKey}${K}.`>
+                : never
+              : never
+        : Default[K] extends string
+          ? `${ParentKey}${K}`
+          : Default[K] extends I18nMessage<any>
+            ? `${ParentKey}${K}`
+            : Default[K] extends object
+              ? `${ParentKey}${K}.${SearchKey<Default[K]>}`
+              : never
+      : never;
+  }[keyof Default];
+
+  export interface I18nOptions<
+    Locales extends Record<string, object | (() => Promise<object>)>,
+    Languages extends string & keyof Locales,
+    DefaultLanguage,
+  > {
+    /**
+     * 不同地区的翻译列表。建议每个地区都建一个独立的文件，然后引入
+     * ```typescript
+     * {
+     *   'zh-CN': <const>{ welcome: '你好 {{user}}', menus: { users: '用户列表' } },
+     *   'en-US': <const>{ welcome: 'Hello {{user}}', menus: { users: 'User List' } },
+     * }
+     * ```
+     */
+    locales: Locales;
+    /**
+     * 默认语言。注意：该语言的翻译列表必须立即引入，不能使用异步回调函数
+     */
+    defaultLanguage: DefaultLanguage;
+    /**
+     * 语言映射，把不规范的语言名称映射到翻译列表对应的语言
+     * ```typescript
+     * {
+     *   'zh'  : 'zh-CN',
+     *   'zh-*': 'zh-CN',
+     *   'en'  : 'en-US',
+     * }
+     * ```
+     */
+    languageAlias?: Record<string, Languages>;
+  }
 }
 
 export class CoreI18n<
@@ -55,7 +121,7 @@ export class CoreI18n<
   protected _currentLanguage: Languages;
   protected _topic = new Topic();
 
-  constructor(opts: I18nOptions<Locales, Languages, DefaultLanguage>) {
+  constructor(opts: CoreI18n.I18nOptions<Locales, Languages, DefaultLanguage>) {
     this._locales = opts.locales;
     this._languages = Object.keys(opts.locales) as Languages[];
     this._fallbackLanguage = this._currentLanguage = opts.defaultLanguage;
@@ -63,10 +129,40 @@ export class CoreI18n<
     this.t = this.translate.bind(this);
   }
 
+  /**
+   * 定义翻译源
+   * ```typescript
+   * export const zh = I18n.define({
+   *   hello: '你好'
+   * })
+   * ```
+   */
+  static define<const Locale extends object>(locale: Locale): Locale {
+    return locale;
+  }
+
+  /**
+   * 新的翻译源的字段需与翻译源模板对齐。新的翻译可以少写字段，但不能错写（静态类型报错）
+   * ```typescript
+   * export const en = I18n.satisfies(zh).define({
+   *   hello: 'Hello'
+   * })
+   * ```
+   */
+  static satisfies<DefaultLocale extends object>(_defaultLocale: DefaultLocale) {
+    return {
+      define<const Locale extends CoreI18n.Infer<DefaultLocale>>(locale: Locale): Locale {
+        return locale;
+      },
+    };
+  }
+
   static message<const Message extends string>(
     msg: Message,
     format?: {
-      [K in SearchParamNames<Message>]?: MessageFormatType | MessageFormatType[];
+      [K in CoreI18n.SearchParamNames<Message>]?:
+        | I18nMessage.FormatType
+        | I18nMessage.FormatType[];
     },
   ): I18nMessage<Message> {
     return new I18nMessage(msg, format || {});
@@ -84,6 +180,17 @@ export class CoreI18n<
    */
   get language() {
     return this._currentLanguage;
+  }
+
+  get missingKeys(): {
+    [K in keyof Locales as K extends DefaultLanguage ? never : K]: string &
+      CoreI18n.Compare<
+        Locales[K] extends () => Promise<infer R extends object> ? R : Locales[K],
+        Locales[DefaultLanguage],
+        ''
+      >;
+  } {
+    return '' as any;
   }
 
   /**
@@ -119,7 +226,7 @@ export class CoreI18n<
   /**
    * 原样返回传入的key。这个方法的意义是通过TS类型检测保证key是正确的。
    */
-  key<Key extends SearchKey<Locales[DefaultLanguage]>>(key: Key): Key {
+  key<Key extends CoreI18n.SearchKey<Locales[DefaultLanguage]>>(key: Key): Key {
     return key;
   }
 
@@ -137,17 +244,21 @@ export class CoreI18n<
    * i18n.t('menu.users');
    * ```
    */
-  translate<Key extends SearchKey<Locales[DefaultLanguage]>>(
+  translate<Key extends CoreI18n.SearchKey<Locales[DefaultLanguage]>>(
     key: Key,
-    ...rest: SearchParamNames<KeyToMessage<Locales[DefaultLanguage], Key>> extends never
+    ...rest: CoreI18n.SearchParamNames<
+      CoreI18n.KeyToMessage<Locales[DefaultLanguage], Key>
+    > extends never
       ? []
       : [
           params: {
-            [S in SearchParamNames<KeyToMessage<Locales[DefaultLanguage], Key>>]: any;
+            [S in CoreI18n.SearchParamNames<
+              CoreI18n.KeyToMessage<Locales[DefaultLanguage], Key>
+            >]: any;
           },
         ]
   ): string & {
-    [K in keyof Locales]: KeyToMessage<
+    [K in keyof Locales]: CoreI18n.KeyToMessage<
       Locales[K] extends () => Promise<infer R extends object> ? R : Locales[K],
       Key
     >;
@@ -180,7 +291,7 @@ export class CoreI18n<
    */
   protected formatTokenValue(
     value: any,
-    formatters: MessageFormatType[],
+    formatters: I18nMessage.FormatType[],
     language: string,
   ) {
     for (const formatter of formatters) {

@@ -1,15 +1,11 @@
 import { CoreI18n } from '../../../src';
 import { zh } from './zh';
 
-export const en = CoreI18n.satisfies(zh).define({
+export const jp = CoreI18n.satisfies(zh).define({
   home: 'hello',
   homeWithName: 'Hello, {{name}}',
   friendFromMessageFunction: CoreI18n.message('my friend is {{friend}}'),
-  menus: {
-    default: {
-      users: 'User lists',
-    },
-  },
+  extra: 'extra',
   i: {
     am: {
       testing: {

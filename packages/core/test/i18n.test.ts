@@ -1,7 +1,7 @@
 import { expect, test, describe, vitest } from 'vitest';
-import { CoreI18n, type MessageFormatType } from '../src';
-import zh from './fixture/locales/zh';
-import en from './fixture/locales/en';
+import { CoreI18n, I18nMessage } from '../src';
+import { zh } from './fixture/locales/zh';
+import { en } from './fixture/locales/en';
 
 const locales = { zh: zh, en: en, jp: en };
 
@@ -125,7 +125,7 @@ describe('格式化', () => {
   });
 
   test('复数数量', () => {
-    const formatters: MessageFormatType[] = [
+    const formatters: I18nMessage.FormatType[] = [
       {
         type: 'plural',
         plural: {
@@ -278,7 +278,7 @@ test('动态加载资源', async () => {
       zh,
       en: async () => {
         spy();
-        return (await import('./fixture/locales/en')).default;
+        return (await import('./fixture/locales/en')).en;
       },
     },
     defaultLanguage: 'zh',

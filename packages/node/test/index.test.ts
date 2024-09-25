@@ -1,7 +1,7 @@
 import { expect, test, vitest } from 'vitest';
 import { I18n } from '../src';
-import zh from '../../core/test/fixture/locales/zh';
-import en from '../../core/test/fixture/locales/en';
+import { zh } from '../../core/test/fixture/locales/zh';
+import { en } from '../../core/test/fixture/locales/en';
 
 const locales = { zh, en };
 

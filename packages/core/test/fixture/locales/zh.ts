@@ -1,6 +1,6 @@
 import { CoreI18n } from '../../../src';
 
-export default <const>{
+export const zh = CoreI18n.define({
   home: '你好',
   homeWithName: '你好，{{name}}',
   friendFromMessageFunction: CoreI18n.message('我的朋友是 {{friend}}'),
@@ -40,4 +40,4 @@ export default <const>{
       },
     },
   },
-};
+});
