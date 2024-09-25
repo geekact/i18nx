@@ -127,9 +127,9 @@ const i18n = new CoreI18n({
   const lngs = i18n.languages;
   expectType<TypeEqual<typeof lngs, ('zh-CN' | 'en-US')[]>>(true);
 
-  i18n.setLanguage('zh-CN');
-  i18n.setLanguage('en-US');
-  i18n.setLanguage('zh');
+  i18n.changeLanguage('zh-CN');
+  i18n.changeLanguage('en-US');
+  i18n.changeLanguage('zh');
 
   // @ts-expect-error
   i18n.language = 'zh-CN';

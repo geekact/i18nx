@@ -198,9 +198,9 @@ export class CoreI18n<
   }
 
   /**
-   * 设置语言，如果语言不存在，则回退到默认语言
+   * 切换语言，如果语言不存在，则回退到默认语言
    */
-  async setLanguage(language: Languages | (string & {})) {
+  async changeLanguage(language: Languages | (string & {})) {
     const lng = this.fixLanguage(language) || this._fallbackLanguage;
 
     const source = this._resources[lng]!;

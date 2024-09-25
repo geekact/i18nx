@@ -18,13 +18,13 @@ describe('语言', () => {
 
   test('设置语言', async () => {
     const i18n = new CoreI18n({ resources, defaultLanguage: 'zh' });
-    await i18n.setLanguage('en');
+    await i18n.changeLanguage('en');
     expect(i18n.language).toBe('en');
   });
 
   test('设置不存在的语言则会退到默认语言', async () => {
     const i18n = new CoreI18n({ resources, defaultLanguage: 'zh' });
-    await i18n.setLanguage('en1');
+    await i18n.changeLanguage('en1');
     expect(i18n.language).toBe('zh');
   });
 
@@ -38,13 +38,13 @@ describe('语言', () => {
         'zh-*': 'zh',
       },
     });
-    await i18n.setLanguage('en1');
+    await i18n.changeLanguage('en1');
     expect(i18n.language).toBe('en');
 
-    await i18n.setLanguage('zh-GB');
+    await i18n.changeLanguage('zh-GB');
     expect(i18n.language).toBe('zh');
 
-    await i18n.setLanguage('en-US');
+    await i18n.changeLanguage('en-US');
     expect(i18n.language).toBe('en');
   });
 });
@@ -73,15 +73,15 @@ describe('翻译', async () => {
 
   test('不同语言下的翻译', async () => {
     const i18n = new CoreI18n({ resources, defaultLanguage: 'zh' });
-    await i18n.setLanguage('en');
+    await i18n.changeLanguage('en');
     expect(i18n.t('homeWithName', { name: '树先生！' })).toBe('Hello, 树先生！');
-    await i18n.setLanguage('zh');
+    await i18n.changeLanguage('zh');
     expect(i18n.t('homeWithName', { name: '树先生！' })).toBe('你好，树先生！');
   });
 
   test('未找到当前地区的翻译时会退到默认翻译', async () => {
     const i18n = new CoreI18n({ resources, defaultLanguage: 'zh' });
-    await i18n.setLanguage('en');
+    await i18n.changeLanguage('en');
     expect(i18n.t('extra')).toBe('多余的翻译');
   });
 
@@ -273,7 +273,7 @@ describe('事件', () => {
     const i18n = new CoreI18n({ resources, defaultLanguage: 'zh' });
     const spy = vitest.fn();
     const event = i18n.on('language-changed', spy);
-    await i18n.setLanguage('jp');
+    await i18n.changeLanguage('jp');
     expect(spy).toBeCalledTimes(1);
     expect(spy).toBeCalledWith('jp');
     event.off();
@@ -283,7 +283,7 @@ describe('事件', () => {
     const i18n = new CoreI18n({ resources, defaultLanguage: 'zh' });
     const spy = vitest.fn();
     const event = i18n.on('language-changed', spy);
-    await i18n.setLanguage('zh');
+    await i18n.changeLanguage('zh');
     expect(spy).toBeCalledTimes(0);
     event.off();
   });
@@ -302,9 +302,9 @@ test('动态加载资源', async () => {
     defaultLanguage: 'zh',
   });
 
-  await i18n.setLanguage('en');
-  await i18n.setLanguage('zh');
-  await i18n.setLanguage('en');
+  await i18n.changeLanguage('en');
+  await i18n.changeLanguage('zh');
+  await i18n.changeLanguage('en');
   expect(spy).toBeCalledTimes(1);
   expect(i18n.t('menus.default.users')).toBe('User lists');
 });
