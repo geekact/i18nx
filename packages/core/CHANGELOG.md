@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.2.1](https://github.com/geekact/i18nx/compare/v0.2.0...v0.2.1) (2024-09-25)
+
+
+### Bug Fixes
+
+* **core:** 复数格式中未匹配的数字不处理 ([79a6b16](https://github.com/geekact/i18nx/commit/79a6b16e37e3fc63cc67aa35ca7e03d3dfc961e6))
+
+
+
+
+
 # [0.2.0](https://github.com/geekact/i18nx/compare/v0.1.2...v0.2.0) (2024-09-25)
 
 
