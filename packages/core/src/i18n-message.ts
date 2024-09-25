@@ -1,5 +1,9 @@
 import type { MessageFormatType } from './type-d';
 
+export namespace I18nMessage {
+  export type FormatType = MessageFormatType;
+}
+
 export class I18nMessage<Message extends string> {
   readonly formats: Record<string, MessageFormatType[]>;
 
