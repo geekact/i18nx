@@ -26,8 +26,9 @@ export class I18n<
   }
 
   override get language() {
-    const parentLanguage = storage.getStore() as Languages | undefined;
-    return parentLanguage || this._currentLanguage;
+    const parentLanguage = storage.getStore();
+    if (parentLanguage === undefined) return super.language;
+    return this.fixLanguage(parentLanguage) || this._fallbackLanguage;
   }
 }
 

@@ -90,32 +90,14 @@ export class CoreI18n<
    * 设置语言，如果语言不存在，则回退到默认语言
    */
   async setLanguage(language: Languages | (string & {})) {
-    let lng: string | undefined;
-    const alias = this._languageAlias;
-
-    if (this.languages.includes(language as Languages)) {
-      lng = language;
-    } else if (Object.hasOwn(alias, language)) {
-      lng = alias[language];
-    } else {
-      for (const key of Object.keys(alias)) {
-        if (!key.includes('*')) continue;
-        if (new RegExp(`^${key.replaceAll('*', '.*')}$`, 'i').test(language)) {
-          lng = alias[key];
-          break;
-        }
-      }
-    }
-
-    lng ||= this._fallbackLanguage;
+    const lng = this.fixLanguage(language) || this._fallbackLanguage;
 
     const source = this._locales[lng]!;
     if (typeof source === 'function') {
-      // @ts-expect-error
       this._locales[lng] = await source();
     }
     if (this._currentLanguage !== lng) {
-      this._currentLanguage = lng as Languages;
+      this._currentLanguage = lng;
       this._topic.publish(EVENT_LANGUAGE_CHANGED, this._currentLanguage);
     }
   }
@@ -270,5 +252,27 @@ export class CoreI18n<
     if (obj == void 0) return;
     if (typeof obj === 'string' || obj instanceof I18nMessage) return obj;
     return;
+  }
+
+  protected fixLanguage(language: string | undefined): Languages | undefined {
+    if (!language) return;
+    const alias = this._languageAlias;
+    let lng: string | undefined;
+
+    if (this.languages.includes(language as Languages)) {
+      lng = language;
+    } else if (Object.hasOwn(alias, language)) {
+      lng = alias[language];
+    } else {
+      for (const key of Object.keys(alias)) {
+        if (!key.includes('*')) continue;
+        if (new RegExp(`^${key.replaceAll('*', '.*')}$`, 'i').test(language)) {
+          lng = alias[key];
+          break;
+        }
+      }
+    }
+
+    return lng as Languages | undefined;
   }
 }
