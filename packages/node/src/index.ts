@@ -4,10 +4,10 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 const storage = new AsyncLocalStorage<string>();
 
 export class I18n<
-  Locales extends Record<string, object>,
-  Languages extends string & keyof Locales,
+  Resources extends Record<string, object>,
+  Languages extends string & keyof Resources,
   DefaultLanguage extends Languages,
-> extends CoreI18n<Locales, Languages, DefaultLanguage> {
+> extends CoreI18n<Resources, Languages, DefaultLanguage> {
   /**
    * 语言上下文，执行的任何翻译都会使用当前提供的语言。建议使用在中间件
    * ```typescript

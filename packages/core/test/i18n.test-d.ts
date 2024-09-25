@@ -6,24 +6,24 @@ import { jp } from './fixture/locales/jp';
 
 const i18n = new CoreI18n({
   defaultLanguage: 'zh-CN',
-  locales: { 'zh-CN': zh, 'en-US': en },
+  resources: { 'zh-CN': zh, 'en-US': en },
 });
 
 // 构造函数
 {
-  new CoreI18n({ locales: { zh: {}, en: {} }, defaultLanguage: 'en' });
+  new CoreI18n({ resources: { zh: {}, en: {} }, defaultLanguage: 'en' });
 
   // @ts-expect-error
   new CoreI18n({ defaultLanguage: 'en' });
 
   new CoreI18n({
-    locales: { zh: {}, en: {} },
+    resources: { zh: {}, en: {} },
     // @ts-expect-error
     defaultLanguage: 'zh1',
   });
 
   // @ts-expect-error
-  new CoreI18n({ locales: { zh: {}, en: {} } });
+  new CoreI18n({ resources: { zh: {}, en: {} } });
 
   // @ts-expect-error
   new CoreI18n({});
@@ -32,7 +32,7 @@ const i18n = new CoreI18n({
   new CoreI18n();
 
   new CoreI18n({
-    locales: { zh: {}, en: {} },
+    resources: { zh: {}, en: {} },
     defaultLanguage: 'zh',
     languageAlias: {
       'zh-CN': 'zh',
@@ -142,7 +142,7 @@ const i18n = new CoreI18n({
 // 动态资源
 {
   const i18n = new CoreI18n({
-    locales: {
+    resources: {
       'zh-CN': zh,
       'en-US': async () => {
         return (await import('./fixture/locales/en')).en;
@@ -203,7 +203,7 @@ const i18n = new CoreI18n({
 // 缺失翻译
 {
   const i18n = new CoreI18n({
-    locales: {
+    resources: {
       zh: zh,
       en: async () => {
         return (await import('./fixture/locales/en')).en;

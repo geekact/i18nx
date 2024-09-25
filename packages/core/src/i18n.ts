@@ -5,18 +5,18 @@ const EVENT_LANGUAGE_CHANGED = 'language-changed';
 
 export namespace CoreI18n {
   export type KeyToMessage<
-    Locale extends object,
+    Resource extends object,
     K extends string,
   > = K extends `${infer A}.${infer B}`
-    ? A extends keyof Locale
-      ? Locale[A] extends object
-        ? KeyToMessage<Locale[A], B>
+    ? A extends keyof Resource
+      ? Resource[A] extends object
+        ? KeyToMessage<Resource[A], B>
         : never
       : never
-    : K extends keyof Locale
-      ? Locale[K] extends string
-        ? Locale[K]
-        : Locale[K] extends I18nMessage<infer R>
+    : K extends keyof Resource
+      ? Resource[K] extends string
+        ? Resource[K]
+        : Resource[K] extends I18nMessage<infer R>
           ? R
           : never
       : never;
@@ -26,25 +26,25 @@ export namespace CoreI18n {
       ? Parameter | SearchParamNames<Suffix>
       : never;
 
-  export type SearchKey<Locales extends object> = {
-    [K in keyof Locales]: K extends string
-      ? Locales[K] extends string
+  export type SearchKey<Resources extends object> = {
+    [K in keyof Resources]: K extends string
+      ? Resources[K] extends string
         ? K
-        : Locales[K] extends I18nMessage<string>
+        : Resources[K] extends I18nMessage<string>
           ? K
-          : Locales[K] extends object
-            ? `${K}.${SearchKey<Locales[K]>}`
+          : Resources[K] extends object
+            ? `${K}.${SearchKey<Resources[K]>}`
             : never
       : never;
-  }[keyof Locales];
+  }[keyof Resources];
 
-  export type Infer<Locale extends object> = {
-    [K in keyof Locale]?: Locale[K] extends string
+  export type Infer<Resource extends object> = {
+    [K in keyof Resource]?: Resource[K] extends string
       ? string | I18nMessage<string>
-      : Locale[K] extends I18nMessage<string>
+      : Resource[K] extends I18nMessage<string>
         ? string | I18nMessage<string>
-        : Locale[K] extends object
-          ? Infer<Locale[K]>
+        : Resource[K] extends object
+          ? Infer<Resource[K]>
           : never;
   };
 
@@ -75,20 +75,24 @@ export namespace CoreI18n {
   }[keyof Default];
 
   export interface I18nOptions<
-    Locales extends Record<string, object | (() => Promise<object>)>,
-    Languages extends string & keyof Locales,
+    Resources extends Record<string, object | (() => Promise<object>)>,
+    Languages extends string & keyof Resources,
     DefaultLanguage,
   > {
     /**
      * 不同地区的翻译列表。建议每个地区都建一个独立的文件，然后引入
      * ```typescript
-     * {
-     *   'zh-CN': <const>{ welcome: '你好 {{user}}', menus: { users: '用户列表' } },
-     *   'en-US': <const>{ welcome: 'Hello {{user}}', menus: { users: 'User List' } },
-     * }
+     * const zh = I18n.define({ welcome: '你好 {{user}}' });
+     * const en = I18n.satisfies(zh).define({ welcome: 'Hello {{user}}' });
+     * const i18n = new I18n({
+     *   resources: {
+     *     'zh-CN': zh,
+     *     'en-US': en,
+     *   }
+     * });
      * ```
      */
-    locales: Locales;
+    resources: Resources;
     /**
      * 默认语言。注意：该语言的翻译列表必须立即引入，不能使用异步回调函数
      */
@@ -108,22 +112,22 @@ export namespace CoreI18n {
 }
 
 export class CoreI18n<
-  Locales extends Record<string, object | (() => Promise<object>)>,
-  Languages extends string & keyof Locales,
+  Resources extends Record<string, object | (() => Promise<object>)>,
+  Languages extends string & keyof Resources,
   DefaultLanguage extends Languages,
 > {
   readonly t: this['translate'];
 
-  protected readonly _locales: Locales;
+  protected readonly _resources: Resources;
   protected readonly _languages: Languages[];
   protected readonly _fallbackLanguage: Languages;
   protected readonly _languageAlias: Record<string, Languages>;
   protected _currentLanguage: Languages;
   protected _topic = new Topic();
 
-  constructor(opts: CoreI18n.I18nOptions<Locales, Languages, DefaultLanguage>) {
-    this._locales = opts.locales;
-    this._languages = Object.keys(opts.locales) as Languages[];
+  constructor(opts: CoreI18n.I18nOptions<Resources, Languages, DefaultLanguage>) {
+    this._resources = opts.resources;
+    this._languages = Object.keys(opts.resources) as Languages[];
     this._fallbackLanguage = this._currentLanguage = opts.defaultLanguage;
     this._languageAlias = opts.languageAlias || {};
     this.t = this.translate.bind(this);
@@ -183,10 +187,10 @@ export class CoreI18n<
   }
 
   get missingKeys(): {
-    [K in keyof Locales as K extends DefaultLanguage ? never : K]: string &
+    [K in keyof Resources as K extends DefaultLanguage ? never : K]: string &
       CoreI18n.Compare<
-        Locales[K] extends () => Promise<infer R extends object> ? R : Locales[K],
-        Locales[DefaultLanguage],
+        Resources[K] extends () => Promise<infer R extends object> ? R : Resources[K],
+        Resources[DefaultLanguage],
         ''
       >;
   } {
@@ -199,9 +203,9 @@ export class CoreI18n<
   async setLanguage(language: Languages | (string & {})) {
     const lng = this.fixLanguage(language) || this._fallbackLanguage;
 
-    const source = this._locales[lng]!;
+    const source = this._resources[lng]!;
     if (typeof source === 'function') {
-      this._locales[lng] = await source();
+      this._resources[lng] = await source();
     }
     if (this._currentLanguage !== lng) {
       this._currentLanguage = lng;
@@ -226,7 +230,7 @@ export class CoreI18n<
   /**
    * 原样返回传入的key。这个方法的意义是通过TS类型检测保证key是正确的。
    */
-  key<Key extends CoreI18n.SearchKey<Locales[DefaultLanguage]>>(key: Key): Key {
+  key<Key extends CoreI18n.SearchKey<Resources[DefaultLanguage]>>(key: Key): Key {
     return key;
   }
 
@@ -244,22 +248,22 @@ export class CoreI18n<
    * i18n.t('menu.users');
    * ```
    */
-  translate<Key extends CoreI18n.SearchKey<Locales[DefaultLanguage]>>(
+  translate<Key extends CoreI18n.SearchKey<Resources[DefaultLanguage]>>(
     key: Key,
     ...rest: CoreI18n.SearchParamNames<
-      CoreI18n.KeyToMessage<Locales[DefaultLanguage], Key>
+      CoreI18n.KeyToMessage<Resources[DefaultLanguage], Key>
     > extends never
       ? []
       : [
           params: {
             [S in CoreI18n.SearchParamNames<
-              CoreI18n.KeyToMessage<Locales[DefaultLanguage], Key>
+              CoreI18n.KeyToMessage<Resources[DefaultLanguage], Key>
             >]: any;
           },
         ]
   ): string & {
-    [K in keyof Locales]: CoreI18n.KeyToMessage<
-      Locales[K] extends () => Promise<infer R extends object> ? R : Locales[K],
+    [K in keyof Resources]: CoreI18n.KeyToMessage<
+      Resources[K] extends () => Promise<infer R extends object> ? R : Resources[K],
       Key
     >;
   };
@@ -353,7 +357,7 @@ export class CoreI18n<
    * 根据语言获取对应的翻译
    */
   protected getMessageByLanguage(keys: string[], language: string) {
-    let obj = this._locales[language] as any;
+    let obj = this._resources[language] as any;
     for (const key of keys) {
       if (typeof obj !== 'object') break;
       if (!Object.hasOwn(obj, key)) break;
