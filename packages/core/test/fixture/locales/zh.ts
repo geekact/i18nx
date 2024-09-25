@@ -1,9 +1,9 @@
-import { message } from '../../../src';
+import { CoreI18n } from '../../../src';
 
 export default <const>{
   home: '你好',
   homeWithName: '你好，{{name}}',
-  friendFromMessageFunction: message('我的朋友是 {{friend}}'),
+  friendFromMessageFunction: CoreI18n.message('我的朋友是 {{friend}}'),
   menus: {
     default: {
       users: '用户列表',

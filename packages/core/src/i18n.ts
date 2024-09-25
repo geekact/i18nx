@@ -63,6 +63,15 @@ export class CoreI18n<
     this.t = this.translate.bind(this);
   }
 
+  static message<const Message extends string>(
+    msg: Message,
+    format?: {
+      [K in SearchParamNames<Message>]?: MessageFormatType | MessageFormatType[];
+    },
+  ): I18nMessage<Message> {
+    return new I18nMessage(msg, format || {});
+  }
+
   /**
    * 可用语言列表
    */

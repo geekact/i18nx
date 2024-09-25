@@ -1,4 +1,4 @@
-import type { MessageFormatType, SearchParamNames } from './type-d';
+import type { MessageFormatType } from './type-d';
 
 export class I18nMessage<Message extends string> {
   readonly formats: Record<string, MessageFormatType[]>;
@@ -13,13 +13,4 @@ export class I18nMessage<Message extends string> {
       }),
     );
   }
-}
-
-export function message<const Message extends string>(
-  msg: Message,
-  format?: {
-    [K in SearchParamNames<Message>]?: MessageFormatType | MessageFormatType[];
-  },
-): I18nMessage<Message> {
-  return new I18nMessage(msg, format || {});
 }
