@@ -316,11 +316,11 @@ export class CoreI18n<
           if (Number.isFinite(digit)) {
             // 使用数字规则匹配
             for (const key of Object.keys(formatter.plural)) {
-              const matched = key.match(/^(\d+)-(\d+)$/);
+              const matched = key.match(/^(\d+)-(\d+|n)$/);
               if (matched) {
                 const lower = Number(matched[1]);
-                const higher = Number(matched[2]);
-                if (digit >= lower && digit <= higher) {
+                const higher = matched[2] === 'n' ? 'n' : Number(matched[2]);
+                if (digit >= lower && (higher === 'n' || digit <= higher)) {
                   value = formatter.plural[key];
                   break switchLabel;
                 }

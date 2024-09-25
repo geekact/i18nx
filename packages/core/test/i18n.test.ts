@@ -132,7 +132,7 @@ describe('格式化', () => {
           1: 'one',
           2: 'two',
           '3-7': 'few',
-          'n': 'many',
+          '8-n': 'many',
         },
       },
     ];
@@ -143,6 +143,24 @@ describe('格式化', () => {
     expect(i18n['formatTokenValue']('7', formatters, 'zh')).toBe('few');
     expect(i18n['formatTokenValue']('8', formatters, 'zh')).toBe('many');
     expect(i18n['formatTokenValue']('foo', formatters, 'zh')).toBe('foo');
+  });
+
+  test('未匹配的数字不使用复数', () => {
+    const formatters: I18nMessage.FormatType[] = [
+      {
+        type: 'plural',
+        plural: {
+          1: 'one',
+          2: 'two',
+          '10-n': 'many',
+        },
+      },
+    ];
+
+    expect(i18n['formatTokenValue']('4', formatters, 'zh')).toBe('4');
+    expect(i18n['formatTokenValue']('8', formatters, 'zh')).toBe('8');
+    expect(i18n['formatTokenValue']('10', formatters, 'zh')).toBe('many');
+    expect(i18n['formatTokenValue']('200', formatters, 'zh')).toBe('many');
   });
 
   test('自定义格式化', () => {
