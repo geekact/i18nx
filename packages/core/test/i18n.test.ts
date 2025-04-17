@@ -100,8 +100,8 @@ describe('翻译', async () => {
 test('提前准备key', () => {
   const i18n = new CoreI18n({ resources, defaultLanguage: 'zh' });
   // @ts-expect-error
-  expect(i18n.key('abc.d.e')).toBe('abc.d.e');
-  expect(i18n.key('menus.default.admins')).toBe('menus.default.admins');
+  expect(i18n.pathGuard('abc.d.e')).toBe('abc.d.e');
+  expect(i18n.pathGuard('menus.default.admins')).toBe('menus.default.admins');
 });
 
 describe('格式化', () => {

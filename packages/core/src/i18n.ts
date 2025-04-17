@@ -4,13 +4,13 @@ import { Topic } from 'topic';
 const EVENT_LANGUAGE_CHANGED = 'language-changed';
 
 export namespace CoreI18n {
-  export type KeyToMessage<
+  export type PathToMessage<
     Resource extends object,
     K extends string,
   > = K extends `${infer A}.${infer B}`
     ? A extends keyof Resource
       ? Resource[A] extends object
-        ? KeyToMessage<Resource[A], B>
+        ? PathToMessage<Resource[A], B>
         : never
       : never
     : K extends keyof Resource
@@ -26,14 +26,14 @@ export namespace CoreI18n {
       ? Parameter | SearchParamNames<Suffix>
       : never;
 
-  export type SearchKey<Resources extends object> = {
+  export type SearchPath<Resources extends object> = {
     [K in keyof Resources]: K extends string
       ? Resources[K] extends string
         ? K
         : Resources[K] extends I18nMessage<string>
           ? K
           : Resources[K] extends object
-            ? `${K}.${SearchKey<Resources[K]>}`
+            ? `${K}.${SearchPath<Resources[K]>}`
             : never
       : never;
   }[keyof Resources];
@@ -69,7 +69,7 @@ export namespace CoreI18n {
           : Default[K] extends I18nMessage<any>
             ? `${ParentKey}${K}`
             : Default[K] extends object
-              ? `${ParentKey}${K}.${SearchKey<Default[K]>}`
+              ? `${ParentKey}${K}.${SearchPath<Default[K]>}`
               : never
       : never;
   }[keyof Default];
@@ -186,7 +186,7 @@ export class CoreI18n<
     return this._currentLanguage;
   }
 
-  get missingKeys(): {
+  get missingPath(): {
     [K in keyof Resources as K extends DefaultLanguage ? never : K]: string &
       CoreI18n.Compare<
         Resources[K] extends () => Promise<infer R extends object> ? R : Resources[K],
@@ -228,10 +228,12 @@ export class CoreI18n<
   }
 
   /**
-   * 原样返回传入的key。这个方法的意义是通过TS类型检测保证key是正确的。
+   * 通过TS类型检测确保路径是已定义的
    */
-  key<Key extends CoreI18n.SearchKey<Resources[DefaultLanguage]>>(key: Key): Key {
-    return key;
+  pathGuard<Path extends CoreI18n.SearchPath<Resources[DefaultLanguage]>>(
+    path: Path,
+  ): Path {
+    return path;
   }
 
   /**
@@ -248,28 +250,29 @@ export class CoreI18n<
    * i18n.t('menu.users');
    * ```
    */
-  translate<Key extends CoreI18n.SearchKey<Resources[DefaultLanguage]>>(
-    key: Key,
+  translate<Path extends CoreI18n.SearchPath<Resources[DefaultLanguage]>>(
+    path: Path,
     ...rest: CoreI18n.SearchParamNames<
-      CoreI18n.KeyToMessage<Resources[DefaultLanguage], Key>
+      CoreI18n.PathToMessage<Resources[DefaultLanguage], Path>
     > extends never
-      ? []
+      ? [params?: Record<string, never>, language?: Languages | (string & {})]
       : [
           params: {
             [S in CoreI18n.SearchParamNames<
-              CoreI18n.KeyToMessage<Resources[DefaultLanguage], Key>
+              CoreI18n.PathToMessage<Resources[DefaultLanguage], Path>
             >]: any;
           },
+          language?: Languages | (string & {}),
         ]
   ): string & {
-    [K in keyof Resources]: CoreI18n.KeyToMessage<
+    [K in keyof Resources]: CoreI18n.PathToMessage<
       Resources[K] extends () => Promise<infer R extends object> ? R : Resources[K],
-      Key
+      Path
     >;
   };
-  translate(key: string, params: Record<string, any> = {}) {
-    const keys = key.split('.');
-    let lng = this.language;
+  translate(path: string, params: Record<string, any> = {}, language?: string) {
+    const keys = path.split('.');
+    let lng = (language && this.fixLanguage(language)) || this.language;
     let message = this.getMessageByLanguage(keys, lng);
 
     if (message === void 0 && lng !== this._fallbackLanguage) {
@@ -277,7 +280,7 @@ export class CoreI18n<
       message = this.getMessageByLanguage(keys, lng);
     }
 
-    if (message === void 0) return key;
+    if (message === void 0) return path;
 
     if (typeof message === 'string') {
       return this.replaceToken(message, params);
@@ -369,6 +372,9 @@ export class CoreI18n<
     return;
   }
 
+  /**
+   * 转为已经定义过的语言
+   */
   protected fixLanguage(language: string | undefined): Languages | undefined {
     if (!language) return;
     const alias = this._languageAlias;

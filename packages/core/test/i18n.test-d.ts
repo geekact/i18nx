@@ -47,11 +47,11 @@ const i18n = new CoreI18n({
 
 // i18n.key
 {
-  const home = i18n.key('home');
-  expectType<'homeWithName'>(i18n.key('homeWithName'));
-  expectType<'menus.default.users'>(i18n.key('menus.default.users'));
+  const home = i18n.pathGuard('home');
+  expectType<'homeWithName'>(i18n.pathGuard('homeWithName'));
+  expectType<'menus.default.users'>(i18n.pathGuard('menus.default.users'));
   // @ts-expect-error
-  i18n.key('homie');
+  i18n.pathGuard('homie');
   // @ts-expect-error
   expectType<'homie'>(home);
 }
@@ -69,8 +69,9 @@ const i18n = new CoreI18n({
   i18n.translate('homeWithName-a', { name: 'abc' });
 
   i18n.translate('menus.default.users');
-  // @ts-expect-error
   i18n.translate('menus.default.users', {});
+  // @ts-expect-error
+  i18n.translate('menus.default.users', { name: 'abc' });
 }
 
 // 翻译返回值
@@ -216,5 +217,5 @@ const i18n = new CoreI18n({
   expectType<{
     en: 'extra' | 'menus.default.admins';
     jp: 'menus.default.users' | 'menus.default.admins';
-  }>(i18n.missingKeys);
+  }>(i18n.missingPath);
 }

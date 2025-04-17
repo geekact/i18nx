@@ -29,7 +29,7 @@
     "access": "public"
   },
   "engines": {
-    "node": "^18 || ^20 || ^22"
+    "node": ">=18"
   },
   "dependencies": {
     "@i18nx/core": "workspace:^"
