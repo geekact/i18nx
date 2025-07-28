@@ -1,12 +1,12 @@
 import { CoreI18n } from '@i18nx/core';
 import {
   useState,
-  useEffect,
   type ReactElement,
   useContext,
   createContext,
   type PropsWithChildren,
   type FC,
+  useLayoutEffect,
 } from 'react';
 
 export class I18n<
@@ -24,7 +24,7 @@ export class I18n<
   Provider: FC<PropsWithChildren> = ({ children }) => {
     const [language, setLanguage] = useState(this.language);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
       const subscription = this.on('language-changed', setLanguage);
       return () => {
         subscription.off();
