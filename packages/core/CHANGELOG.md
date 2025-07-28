@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.1](https://github.com/geekact/i18nx/compare/v0.3.0...v0.3.1) (2025-07-28)
+
+**Note:** Version bump only for package @i18nx/core
+
+
+
+
+
 # [0.3.0](https://github.com/geekact/i18nx/compare/v0.2.1...v0.3.0) (2025-04-17)
 
 
