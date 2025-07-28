@@ -12,4 +12,4 @@ const i18n = new I18n({
 });
 
 const lang = useLanguage(i18n);
-expectType<TypeEqual<string, typeof lang>>(true);
+expectType<TypeEqual<'zh' | 'en', typeof lang>>(true);
